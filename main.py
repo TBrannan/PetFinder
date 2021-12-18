@@ -65,6 +65,8 @@ def create_url(pet):
     get_token(values)
 
 # Create a new file for animal colors?
+# create a function that is dynamic for all animals and their colors?
+# If dog use dog_colors if cat use cat_colors
 def colors(type):
     dog_colors = animal_colors.dog_colors
     color = '0'
