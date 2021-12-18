@@ -3,7 +3,7 @@ import requests
 import env
 import animal_colors
 
-
+#Probably need to create a Class and add token to __init__
 def get_token(values):
     data = {}
     data["grant_type"] = "client_credentials"
@@ -33,7 +33,8 @@ def make_request(token,values):
             print(i['url'])
             print(i['colors'])
 
-
+# need to clean this up, maybe split user input questions into another file
+# condense multiple quetsions to single line
 def pet_finder():
     pet = {}
     pet["type"] = input("What type of animal are you looking for?\n: ")
@@ -63,7 +64,7 @@ def create_url(pet):
     values = {k: v for k, v in pet.items() if v is not None}
     get_token(values)
 
-
+# Create a new file for animal colors?
 def colors(type):
     dog_colors = animal_colors.dog_colors
     color = '0'
