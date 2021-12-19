@@ -102,6 +102,7 @@ celerybeat.pid
 *.sage.py
 
 # Environments
+pet_test.py
 env.py
 .env
 .venv

@@ -1,10 +1,10 @@
 import json
 import requests
 import env
-import animal_colors
+import query
 
 #Probably need to create a Class and add token to __init__
-def get_token(values):
+def get_token(api_url,values='False'):
     data = {}
     data["grant_type"] = "client_credentials"
     data["client_id"]=env.client_id
@@ -13,7 +13,20 @@ def get_token(values):
     r = requests.post(url, data=json.dumps(data), verify=False)
     y = json.loads(r.content)
     token = y["access_token"]
-    make_request(token,values)
+    if values != 'False':
+        make_request(token,values)
+    else:
+        dog_breed = custom_request(token,api_url)
+        return dog_breed
+
+def custom_request(token,url):
+    headers = {}
+    headers["Accept"] = "application/json"
+    headers["Authorization"] = f"Bearer {token}"
+    r = requests.get(url,headers=headers)
+    # print(r.url)
+    pet = json.loads(r.content)
+    return pet
 
 
 def make_request(token,values):
@@ -21,94 +34,37 @@ def make_request(token,values):
     headers["Accept"] = "application/json"
     headers["Authorization"] = f"Bearer {token}"
 
-    #Need to add try here to catch if no color is selected
-    color = values['color']
+    try:
+        color = values['color']
+        colors = True
+    except KeyError as e:
+        colors = False
+        pass
 
     url = f'https://api.petfinder.com/v2/animals'
     r = requests.get(url,headers=headers, params=values)
-    print(r.url)
+    # print(r.url)
     pet = json.loads(r.content)
-    for count,i in enumerate(pet['animals']):
-        if i['colors']['primary'] == color.title() or i['colors']['primary'] == color.lower():
-            print(i['url'])
-            print(i['colors'])
-
-# need to clean this up, maybe split user input questions into another file
-# condense multiple quetsions to single line
-def pet_finder():
-    pet = {}
-    pet["type"] = input("What type of animal are you looking for?\n: ")
-
-    q1 = input("Do you know what breed?\n: ")
-    if q1.lower() == "y" or q1.lower() == "yes":
-        pet["breed"] = input("What is the breed?\n: ")
+    if colors is False:
+        for count,i in enumerate(pet['animals']):
+            if i == None:
+                print("No Matches")
+            else:
+                print(i['url'])
     else:
-        pet["breed"] = None
+        for count,i in enumerate(pet['animals']):
+            if i == None:
+                print("No Matches")
+            elif i['colors']['primary'] == color.title() or i['colors']['primary'] == color.lower():
+                print(i['colors'])
+                print(i['url'])
 
-    q2 = input("Do you know what color?\n: ")
-    if q2.lower() == 'y' or q2.lower() == 'yes':
-        pet["color"] = colors(pet["type"])
-    else:
-        pet["color"] = None
-
-    zipcode = "0"
-    while len(zipcode) != 5:
-        zipcode = input("Please enter 5 digit your zipcode\n: ")
-
-    pet["location"] = zipcode
-    pet["distance"] = 50
-
-    create_url(pet)
 
 def create_url(pet):
     values = {k: v for k, v in pet.items() if v is not None}
-    get_token(values)
-
-# Create a new file for animal colors?
-# create a function that is dynamic for all animals and their colors?
-# If dog use dog_colors if cat use cat_colors
-def colors(type):
-    dog_colors = animal_colors.dog_colors
-    color = '0'
-    if type == 'dog':
-        try:
-            while int(color) not in range(1,16):
-                for a,b in zip(dog_colors,dog_colors.values()):
-                    print(f'{a}: {b}')
-                color = input("\nPlease select the number associated with the color you would like\n :")
-            else:
-                colorboi = dog_colors[color]
-                confirm = input(f"Is {colorboi} the color you want?\n :")
-                if confirm.lower() == 'y' or confirm.lower() =='yes':
-                    selected_color = dog_colors[color]
-                    return selected_color
-                else:
-                    colors()
-        except ValueError as e:
-            print("Please select an integer")
-            colors()
-    elif type == 'cat':
-        return cat_color()
-
-def cat_color():
-    cat_colors = animal_colors.cat_colors
-    color = '0'
-    try:
-        while int(color) not in range(1,31):
-            for a,b in zip(cat_colors,cat_colors.values()):
-                print(f'{a}: {b}')
-            color = input("\nPlease select the number associated with the color you would like\n :")
-        else:
-            colorboi = cat_colors[color]
-            confirm = input(f"Is {colorboi} the color you want?\n :")
-            if confirm.lower() == 'y' or confirm.lower() =='yes':
-                selected_color = cat_colors[color]
-                return selected_color
-            else:
-                cat_colors()
-    except ValueError as e:
-        print("Please select an integer")
-        cat_color()
+    get_token('',values)
 
 
-pet_finder()
+
+if __name__ == '__main__':
+    query.pet_finder()
